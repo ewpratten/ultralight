@@ -2,6 +2,7 @@ import requests
 import flask
 import json
 import yaml
+from datetime import datetime
 
 # Flask app configuration
 app = flask.Flask(__name__)
@@ -75,13 +76,44 @@ def handleSourcesAPI():
 # Generates a fake .pom file for input data
 def generatePOMForPackage(group, artifact, version) -> str:
     return f"""
-<?xml version="1.0" encoding="UTF-8"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>{group}</groupId>
   <artifactId>{artifact}</artifactId>
   <version>{version}</version>
 </project>
+"""
+
+def generateMavenMetadata(group, artifact, versions):
+
+    # Get the latest timestamp
+    latest_timestamp = 0
+    for version in versions.values():
+        if int(version["timestamp"]) > latest_timestamp:
+            latest_timestamp = int(version["timestamp"])
+
+    # Build a versions list
+    generated_versions = ""
+    for version in versions:
+        generated_versions += f"<version>{version}</version>\n"
+
+    latest_version = list(versions.keys())[0]
+
+    # Build file
+    return f"""
+<metadata modelVersion="1.1.0">
+  <groupId>{group}</groupId>
+  <artifactId>{artifact}</artifactId>
+  <version>{latest_version}</version>
+  <versioning>
+    <latest>{latest_version}</latest>
+    <release>{latest_version}</release>
+    <versions>
+        {generated_versions}
+    </versions>
+    <lastUpdated>{latest_timestamp}</lastUpdated>
+  </versioning>
+</metadata>
 """
 
 # Fetches a list of valid versions for a repository
@@ -92,10 +124,14 @@ def getAllValidVersions(repocode) -> dict:
     # Build version list
     output = {}
     for entry in data:
-        output[entry["tag_name"].strip("v")] = entry["assets_url"]
+        output[entry["tag_name"].strip("v")] = {
+            "url": entry["assets_url"],
+
+            # Make a timestamp
+            "timestamp": (datetime.strptime(entry["published_at"], '%Y-%m-%dT%H:%M:%SZ') - datetime(1970, 1, 1)).total_seconds(),
+        }
 
     return output
-
 
 # Fetches a JAR through GitHub
 def fetchJAR(url, fmt):
@@ -108,12 +144,12 @@ def fetchJAR(url, fmt):
             res = flask.make_response(flask.jsonify({
                 "success": True,
                 "redirect": True
-            }))
+            }), 302)
             res.headers.set("content-type", "application/x-maven-pom+xml")
             res.headers.set("Location", entry["browser_download_url"])
-            return res, 302
+            return res
 
-    return "Not found", 404
+    return flask.make_response("Not found", 404)
 
 # Maven handler
 @app.route("/maven/<path:path>")
@@ -122,22 +158,31 @@ def handleMaven(path):
     # Parse filepath
     pathComponents = path.split("/")
 
-    # If there are less than 4 elements, throw an error
-    if len(pathComponents) < 4:
-        return "Artifact not found (parse error)", 404
-
     # Get the requested filename
     filename = pathComponents[-1]
     file_ext = filename.split(".")[-1]
 
-    # Get the version
-    version = pathComponents[-2]
+    # Handle non-metadata requests
+    version: str
+    artifact: str
+    group: str
+    if len(pathComponents) > 4:
+        # Get the version
+        version = pathComponents[-2]
 
-    # Get the artifactID
-    artifact = pathComponents[-3]
+        # Get the artifactID
+        artifact = pathComponents[-3]
 
-    # Get the groupID
-    group = ".".join(pathComponents[:-3])
+        # Get the groupID
+        group = ".".join(pathComponents[:-3])
+    elif len(pathComponents) == 4:
+        # Get the artifactID
+        artifact = pathComponents[-2]
+
+        # Get the groupID
+        group = ".".join(pathComponents[:-2])
+    else:
+        return "Artifact not found (parse error)", 404
 
     # Check that the artifact exists
     repocode = ""
@@ -150,24 +195,33 @@ def handleMaven(path):
     else:
         return "Artifact not on this server", 404
 
-    # Make sure the requested version exists
+    # Get a list of valid versions
     allAssetVersions = getAllValidVersions(repocode)
+
+    # Handle requests to maven-metadata
+    if filename == "maven-metadata.xml":
+        res = flask.make_response(generateMavenMetadata(group, artifact, allAssetVersions))
+        res.headers.set("content-type", "application/xml")
+        res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+        return res
+
+    # Make sure the requested version exists
     if version not in allAssetVersions.keys():
         return "Artifact does not have this version (yet?)", 404
 
     # If the request is for a pom file, generate one
     if file_ext == "pom":
-        res = generatePOMForPackage(group, artifact, version)
+        res = flask.make_response(generatePOMForPackage(group, artifact, version))
+        res.headers.set("content-type", "application/java-archive")
         res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
         return res
 
     if file_ext == "jar":
 
         # Get the asset URL for this version
-        assetURL = allAssetVersions[version]
+        assetURL = allAssetVersions[version]["url"]
 
-        res = flask.make_response(fetchJAR(assetURL, fmt.replace("{version}", version)))
-        res.headers.set("content-type", "application/java-archive")
+        res = fetchJAR(assetURL, fmt.replace("{version}", version))
         res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
         return res
 
