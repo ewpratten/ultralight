@@ -1,0 +1,32 @@
+{
+    "version": 2,
+    "name": "ultralight",
+    "builds": [
+        {
+            "src": "**/*.py",
+            "use": "@now/python@canary"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/.*",
+            "dest": "/backend.py",
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+                "RetryLife-Service-Source": "lambda",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        },
+        {
+            "src": "/",
+            "dest": "/backend.py",
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept, Authorization",
+                "RetryLife-Service-Source": "lambda",
+                "Access-Control-Allow-Credentials": "true"
+            }
+        }
+    ]
+}
