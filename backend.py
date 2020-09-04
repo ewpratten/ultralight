@@ -3,10 +3,15 @@ import flask
 import json
 import yaml
 from datetime import datetime
+import os
 
 # Flask app configuration
-app = flask.Flask(__name__)
+app = flask.Flask(__name__, static_folder="static")
 app.config['JSON_SORT_KEYS'] = False
+
+# Handle Github tokens
+GH_ID = os.environ.get("GH_CLI_ID", "")
+GH_PRIV = os.environ.get("GH_CLI_PRIV", "")
 
 # Function to load the sources yml
 def loadSourcesYML() -> dict:
@@ -17,7 +22,7 @@ def loadSourcesYML() -> dict:
 def handleIndex():
 
     # Load the index
-    index = open("index.html", "r").read()
+    index = open("static/index.html", "r").read()
 
     # Build a flask response
     res = flask.make_response(index)
@@ -194,7 +199,7 @@ def generateMavenMetadata(group, artifact, versions):
 # Fetches a list of valid versions for a repository
 def getAllValidVersions(repocode) -> dict:
     # Read from the GitHub API
-    data = requests.get(f"https://api.github.com/repos/{repocode}/releases").json()
+    data = requests.get(f"https://api.github.com/repos/{repocode}/releases", auth=(GH_ID, GH_PRIV)).json()
 
     # Build version list
     output = {}
@@ -211,7 +216,7 @@ def getAllValidVersions(repocode) -> dict:
 # Fetches a JAR through GitHub
 def fetchJAR(url, fmt):
     # Read from the GitHub API
-    data = requests.get(url).json()
+    data = requests.get(url, auth=(GH_ID, GH_PRIV)).json()
 
     # Look for an entry in data with a matching filename
     for entry in data:

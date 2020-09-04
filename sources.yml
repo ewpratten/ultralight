@@ -1,6 +1,13 @@
 
 sources:
    - 
+      groupID: "ca.quarkphysics"
+      artifactID: "hsa2"
+      github:
+        owner: ewpratten
+        repository: HSA2
+        assetFormat: "HSA2.jar"
+   - 
       groupID: "ca.retrylife"
       artifactID: "ewgui"
       github:

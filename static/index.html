@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultralight Maven</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        .hidden {
+            display: none !important;
+        }
+
+        .header {
+            min-height: 30vh;
+            background-color: #1274bf;
+            text-align: center;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        pre {
+            background-color: #141414;
+            color: #fff;
+            width: 100%;
+            padding: 15px;
+        }
+
+        h1 a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        h1 a:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
+
+</head>
+
+<body>
+
+    <div class="header">
+        <h1><a href="/"><strong>Ultralight Maven</strong></a></h1>
+    </div>
+    <br>
+    <br>
+
+    <div class="content">
+
+        <div class="container" id="listing">
+            <h1 id="package_name">What is Ultralight?</h1>
+            <p>Ultralight is a custom maven server built by <a href="https://retrylife.ca">Evan Pratten</a> that is
+                designed to run on machines with very low resources, and almost no storage. The main reason behind this
+                design is to allow this service to be hosted as a single AWS Lambda function on <a
+                    href="https://vercel.com">vercel.com</a>. Feel free to take a look at the <a
+                    href="https://github.com/Ewpratten/ultralight">Ultralight GitHub repository</a> to contribute to
+                this project, or for instructions on how to host your own Ultralight instance.</p>
+
+            <h1 id="package_name">All Artifacts</h1>
+
+            <div class="spinner-border" role="status" id="listing-loader">
+                <span class="sr-only">Loading...</span>
+            </div>
+
+
+            <ul id="artifact-listing" class="list-group">
+            </ul>
+
+        </div>
+
+        <div id="artifact-loader" class="hidden">
+            <br><br><br>
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="container hidden" id="artifact">
+            <h1 id="package-name">com.example.artifact</h1>
+            <a href="#markdownEmbedModal" id="shield" data-toggle="modal"></a>
+            <hr>
+
+            <h3>Versions:</h3>
+            <ul id="artifact-versions">
+            </ul>
+
+            <h3>Using</h3>
+            <p>Choose one of the following snippets to paste into your buildsystem</p>
+
+            <div class="accordion" id="accordionExample">
+                <div class="card">
+                    <div class="card-header" id="headingOne">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne"
+                                aria-expanded="true" aria-controls="collapseOne">
+                                Gradle
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapseOne" class="collapse show" aria-labelledby="headingOne"
+                        data-parent="#accordionExample">
+                        <div class="card-body">
+
+                            <p><strong>Step 1.</strong> Declare this maven server the end of your repositories block in
+                                <strong>build.gradle</strong></p>
+
+                            <pre id="gradle-snippet-repositories">
+repositories {
+    ...
+    maven { url '{domain}/maven' }
+}</pre>
+
+                            <p><strong>Step 2.</strong> Add this artifact as a dependency</p>
+
+                            <pre id="gradle-snippet-deps">
+dependencies {
+    implementation '{groupID}:{artifactID}:{version}'
+}</pre>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" id="headingFive">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse"
+                                data-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                Bazel (using rules_jvm_external)
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapseFive" class="collapse" aria-labelledby="headingFive"
+                        data-parent="#accordionExample">
+                        <div class="card-body">
+
+                            <p>Define this artifact as an external dependency in the
+                                <strong>WORKSPACE</strong></p>
+
+                            <pre id="bazel-snippet">
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_jvm_external",
+    strip_prefix = "rules_jvm_external-3.3",
+    sha256 = "d85951a92c0908c80bd8551002d66cb23c3434409c814179c0ff026b53544dab",
+    url = "https://github.com/bazelbuild/rules_jvm_external/archive/3.3.zip",
+)
+
+load("@rules_jvm_external//:defs.bzl", "maven_install")
+
+maven_install(
+    artifacts = [
+        "{groupID}:{artifactID}:{version}",
+    ],
+    repositories = [
+        "{domain}/maven",
+    ],
+)</pre>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" id="headingTwo">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link collapsed" type="button" data-toggle="collapse"
+                                data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                Maven
+                            </button>
+                        </h2>
+                    </div>
+                    <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+                        <div class="card-body">
+
+                            <p><strong>Step 1.</strong> Declare this maven server in your build file</p>
+
+                            <pre id="maven-snippet-repositories">
+&lt;repositories&gt;
+    &lt;repository&gt;
+        &lt;id&gt;{host}&lt;/id&gt;
+        &lt;url&gt;{domain}/maven&lt;/url&gt;
+    &lt;/repository&gt;
+&lt;/repositories&gt;</pre>
+
+                            <p><strong>Step 2.</strong> Add this artifact as a dependency</p>
+
+                            <pre id="maven-snippet-deps">
+&lt;dependency&gt;
+    &lt;groupId&gt;{groupID}&lt;/groupId&gt;
+    &lt;artifactId&gt;{artifactID}&lt;/artifactId&gt; 
+    &lt;version&gt;{version}&lt;/version&gt;
+&lt;/dependency&gt;</pre>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" id="headingThree">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse"
+                                data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                Sbt
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapseThree" class="collapse" aria-labelledby="headingThree"
+                        data-parent="#accordionExample">
+                        <div class="card-body">
+
+                            <p><strong>Step 1.</strong> Declare this maven server the end of your resolvers list in
+                                <strong>build.sbt</strong></p>
+
+                            <pre id="sbt-snippet-repositories">
+resolvers += "{host}" at "{domain}/maven"</pre>
+
+                            <p><strong>Step 2.</strong> Add this artifact as a dependency</p>
+
+                            <pre id="sbt-snippet-deps">
+libraryDependencies += "{groupID}" % "{artifactID}" % "{version}"</pre>
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header" id="headingFour">
+                        <h2 class="mb-0">
+                            <button class="btn btn-link" type="button" data-toggle="collapse"
+                                data-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                Leiningen
+                            </button>
+                        </h2>
+                    </div>
+
+                    <div id="collapseFour" class="collapse" aria-labelledby="headingFour"
+                        data-parent="#accordionExample">
+                        <div class="card-body">
+
+                            <p><strong>Step 1.</strong> Declare this maven server the end of your repositories in
+                                <strong>project.clj</strong></p>
+
+                            <pre id="leiningen-snippet-repositories">
+:repositories [["{host}" "{domain}/maven"]]</pre>
+
+                            <p><strong>Step 2.</strong> Add this artifact as a dependency</p>
+
+                            <pre id="leiningen-snippet-deps">
+:dependencies [[{groupID}/{artifactID} "{version}"]]</pre>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="modal fade" id="markdownEmbedModal" tabindex="-1" role="dialog"
+                aria-labelledby="markdown-embed-modal-title" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="markdown-embed-modal-title">Shields</h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            The Ultralight server will automatically generate a shield for each artifact. To embed the
+                            shield for this artifact in a Markdown file, copy the following line:
+                            <pre id="mdSnippet"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <br><br>
+    <div style="text-align:center;color:gray">
+        Made with ♥ by <a href="https://retrylife.ca">Evan Pratten</a>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+        integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+        integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM"
+        crossorigin="anonymous"></script>
+
+    <!-- scripts -->
+    <script src="/static/js/domainresolv.js"></script>
+    <script src="/static/js/mainpage.js"></script>
+    <script src="/static/js/artifactpage.js"></script>
+
+    <!-- Main runner -->
+    <script>
+        // Check for an artifact in the url
+        var group = new URLSearchParams(window.location.search).get("g");
+        var artifact = new URLSearchParams(window.location.search).get("a");
+
+        if (!artifact && !group) {
+            loadMainPageArtifacts();
+        } else {
+            loadArtifactPage(group, artifact)
+        }
+
+    </script>
+
+</body>
+
+</html>
