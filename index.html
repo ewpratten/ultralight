@@ -85,7 +85,7 @@
         </div>
 
         <div class="container hidden" id="artifact">
-            <h1 id="package_name">com.example.artifact</h1>
+            <h1 id="package-name">com.example.artifact</h1>
             <hr>
 
             <h3>Versions:</h3>
@@ -184,7 +184,7 @@
                     document.getElementById("artifact").classList.remove("hidden");
 
                     // Set the title
-                    document.getElementById("package_name").innerText = group + "." + artifact;
+                    document.getElementById("package-name").innerText = group + "." + artifact;
 
                     // Iter each version
                     response.versions.forEach((version) => {
