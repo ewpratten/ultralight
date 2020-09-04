@@ -2,11 +2,11 @@
 sources:
    - 
       groupID: "ca.retrylife"
-      artifactID: "libepn"
+      artifactID: "ewgui"
       github:
         owner: ewpratten
-        repository: libepn
-        assetFormat: "easy-pose-notation-{version}.jar"
+        repository: ewgui
+        assetFormat: "ewgui.jar"
    - 
       groupID: "ca.retrylife"
       artifactID: "ewmath"
@@ -15,10 +15,37 @@ sources:
         repository: ewmath
         assetFormat: "ewmath.jar"
    - 
+      groupID: "ca.retrylife.frc"
+      artifactID: "limelight"
+      github:
+        owner: ewpratten
+        repository: limelight
+        assetFormat: "Limelight.jar"
+   - 
+      groupID: "ca.retrylife"
+      artifactID: "libepn"
+      github:
+        owner: ewpratten
+        repository: libepn
+        assetFormat: "easy-pose-notation-{version}.jar"
+   - 
+      groupID: "ca.retrylife"
+      artifactID: "libvec"
+      github:
+        owner: ewpratten
+        repository: libvec
+        assetFormat: "libvec-{version}.jar"
+   - 
+      groupID: "dev.rsninja"
+      artifactID: "gamej"
+      github:
+        owner: ewpratten
+        repository: gamej
+        assetFormat: "core.jar"
+   - 
       groupID: "io.github.frc5024"
       artifactID: "lib5k"
       github:
         owner: frc5024
         repository: lib5k
         assetFormat: "lib5k-{version}-all.jar"
-   
