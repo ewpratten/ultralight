@@ -13,6 +13,9 @@ app.config['JSON_SORT_KEYS'] = False
 GH_ID = os.environ.get("GH_CLI_ID", "")
 GH_PRIV = os.environ.get("GH_CLI_PRIV", "")
 
+# Caching
+CACHE_SECONDS = 60
+
 # Function to load the sources yml
 def loadSourcesYML() -> dict:
     return yaml.load(open("sources.yml"))
@@ -28,7 +31,7 @@ def handleIndex():
     res = flask.make_response(index)
 
     # Add a caching header for Vercel
-    res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+    res.headers.set('Cache-Control', f"s-maxage={CACHE_SECONDS}, stale-while-revalidate")
 
     return res
 
@@ -43,7 +46,7 @@ def handleSources():
     res = flask.make_response(sources)
 
     # Add a caching header for Vercel
-    res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+    res.headers.set('Cache-Control', f"s-maxage={CACHE_SECONDS}, stale-while-revalidate")
 
     # Set the content type
     res.headers.set('content-type', 'application/yaml')
@@ -71,7 +74,7 @@ def handleSourcesAPI():
     ))
 
     # Add a caching header for Vercel
-    res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+    res.headers.set('Cache-Control', f"s-maxage={CACHE_SECONDS}, stale-while-revalidate")
 
     # Set the content type
     res.headers.set('content-type', 'application/json')
@@ -111,7 +114,7 @@ def handleArtifactAPI(group, artifact):
     ))
 
     # Add a caching header for Vercel
-    res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+    res.headers.set('Cache-Control', f"s-maxage={CACHE_SECONDS}, stale-while-revalidate")
 
     # Set the content type
     res.headers.set('content-type', 'application/json')
@@ -282,7 +285,7 @@ def handleMaven(path):
     if filename == "maven-metadata.xml":
         res = flask.make_response(generateMavenMetadata(group, artifact, allAssetVersions))
         res.headers.set("content-type", "application/xml")
-        res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+        res.headers.set('Cache-Control', f"s-maxage={CACHE_SECONDS}, stale-while-revalidate")
         return res
 
     # Make sure the requested version exists
@@ -293,7 +296,7 @@ def handleMaven(path):
     if file_ext == "pom":
         res = flask.make_response(generatePOMForPackage(group, artifact, version))
         res.headers.set("content-type", "application/java-archive")
-        res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+        res.headers.set('Cache-Control', f"s-maxage={CACHE_SECONDS}, stale-while-revalidate")
         return res
 
     if file_ext == "jar":
@@ -302,7 +305,7 @@ def handleMaven(path):
         assetURL = allAssetVersions[version]["url"]
 
         res = fetchJAR(assetURL, fmt.replace("{version}", version))
-        res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+        res.headers.set('Cache-Control', f"s-maxage={CACHE_SECONDS}, stale-while-revalidate")
         return res
 
     return "Artifact not found", 404
