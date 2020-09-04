@@ -73,6 +73,47 @@ def handleSourcesAPI():
 
     return res
 
+@app.route("/api/artifact/<group>/<artifact>/versions")
+def handleArtifactAPI(group, artifact):
+
+    # Check that the artifact exists
+    repocode = ""
+    fmt = ""
+    for source in loadSourcesYML()["sources"]:
+        if source["groupID"] == group and source["artifactID"] == artifact:
+            repocode = source["github"]["owner"] + "/" + source["github"]["repository"]
+            fmt = source["github"]["assetFormat"]
+            break
+    else:
+        return "Artifact not on this server", 404
+
+    # Get version data
+    version_data = []
+    raw_versions = getAllValidVersions(repocode)
+    for v in raw_versions:
+        version_data.append({
+            "code": v,
+            "timestamp": raw_versions[v]["timestamp"]
+        })
+
+
+    # Build a flask response
+    res = flask.make_response(flask.jsonify(
+        {
+            "success": True,
+            "versions": version_data
+        }
+    ))
+
+    # Add a caching header for Vercel
+    res.headers.set('Cache-Control', 's-maxage=1, stale-while-revalidate')
+
+    # Set the content type
+    res.headers.set('content-type', 'application/json')
+
+    return res
+
+
 # Generates a fake .pom file for input data
 def generatePOMForPackage(group, artifact, version) -> str:
     return f"""

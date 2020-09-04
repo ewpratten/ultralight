@@ -1,13 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ultralight Maven</title>
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+        integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <style>
+        .hidden {
+            display: none !important;
+        }
+
+        .header {
+            min-height: 30vh;
+            background-color: #1274bf;
+            text-align: center;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        pre {
+            background-color: #141414;
+            color: #fff;
+            width: 100%;
+            padding: 15px;
+        }
+
+        h1 a {
+            color: #fff;
+            text-decoration: none;
+        }
+
+        h1 a:hover {
+            color: #fff;
+            text-decoration: none;
+        }
+    </style>
+
 </head>
+
 <body>
-    
-    <p>Point your buildsystem at this domain for maven</p>
+
+    <div class="header">
+        <h1><a href="/"><strong>Ultralight Maven</strong></a></h1>
+    </div>
+    <br>
+    <br>
+
+    <div class="content">
+
+        <div class="container" id="listing">
+            <h1 id="package_name">What is Ultralight?</h1>
+            <p>Ultralight is a custom maven server built by <a href="https://retrylife.ca">Evan Pratten</a> that is
+                designed to run on machines with very low resources, and almost no storage. The main reason behind this
+                design is to allow this service to be hosted as a single AWS Lambda function on <a
+                    href="https://vercel.com">vercel.com</a>. Feel free to take a look at the <a
+                    href="https://github.com/Ewpratten/ultralight">Ultralight GitHub repository</a> to contribute to
+                this project, or for instructions on how to host your own Ultralight instance.</p>
+
+            <h1 id="package_name">All Artifacts</h1>
+
+            <div class="spinner-border" role="status" id="listing-loader">
+                <span class="sr-only">Loading...</span>
+            </div>
+
+
+            <ul id="artifact-listing" class="list-group">
+            </ul>
+
+        </div>
+
+        <div id="artifact-loader" class="hidden">
+            <br><br><br>
+            <div class="d-flex justify-content-center">
+                <div class="spinner-border" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="container hidden" id="artifact">
+            <h1 id="package_name">com.example.artifact</h1>
+            <hr>
+
+            <h3>Versions:</h3>
+            <ul id="artifact-versions">
+            </ul>
+
+            <h3>Using</h3>
+            <p>Choose one of the following snippets to paste into your buildsystem</p>
+
+            <p><strong>Gradle:</strong></p>
+            <pre id="gradle-snippet"></pre>
+
+            <p><strong>Maven:</strong></p>
+            <pre id="maven-snippet"></pre>
+
+        </div>
+
+    </div>
+
+    <br><br>
+    <div style="text-align:center;color:gray">
+        Made with ♥ by <a href="https://retrylife.ca">Evan Pratten</a>
+    </div>
+
+    <script>
+        function loadMainPageArtifacts() {
+            // Make an HTTP request
+            const Http = new XMLHttpRequest();
+            const url = "/api/sources";
+            Http.open("GET", url);
+            Http.send();
+
+            // Handle response
+            Http.onreadystatechange = (e) => {
+                // Get response data
+                var response;
+                try {
+                    response = JSON.parse(Http.response);
+                } catch (error) {
+                    return;
+                }
+
+                // Set all data
+                if (response.success) {
+
+                    // Hide loader
+                    document.getElementById("listing-loader").classList.add("hidden");
+
+                    // Clear the artifact listing
+                    document.getElementById("artifact-listing").innerHTML = "";
+
+                    // Iter each artifact
+                    response.sources.forEach((source) => {
+                        var name = source.groupID + "." + source.artifactID;
+                        document.getElementById("artifact-listing").innerHTML += "<li class='list-group-item'><a href='/?a=" + source.artifactID + "&g=" + source.groupID + "'>" + name + "</a></li>";
+                    })
+
+                }
+            };
+        }
+
+        function loadArtifactPage(group, artifact) {
+
+            // Hide main page
+            document.getElementById("listing").classList.add("hidden");
+
+            // Unhide artifact loader
+            document.getElementById("artifact-loader").classList.remove("hidden");
+
+            // Make an HTTP request
+            const Http = new XMLHttpRequest();
+            const url = "/api/artifact/" + group + "/" + artifact + "/versions";
+            Http.open("GET", url);
+            Http.send();
+
+            // Handle response
+            Http.onreadystatechange = (e) => {
+                // Get response data
+                var response;
+                try {
+                    response = JSON.parse(Http.response);
+                } catch (error) {
+                    return;
+                }
+
+                // Set all data
+                if (response.success) {
+
+                    // Hide loader
+                    document.getElementById("artifact-loader").classList.add("hidden");
+
+                    // Clear the version listing
+                    document.getElementById("artifact-versions").innerHTML = "";
+
+                    // Show the artifact page
+                    document.getElementById("artifact").classList.remove("hidden");
+
+                    // Set the title
+                    document.getElementById("package_name").innerText = group + "." + artifact;
+
+                    // Iter each version
+                    response.versions.forEach((version) => {
+                        document.getElementById("artifact-versions").innerHTML += "<li><a href=\"#\" onclick=\"setActiveVersionExample('" + group + "','" + artifact + "','" + version.code + "');\">" + version.code + "</a></li>";
+                    })
+
+                    // Make a call to display the latest set of snippets
+                    setActiveVersionExample(group, artifact, response.versions[0].code);
+                }
+            };
+        }
+
+        function setActiveVersionExample(group, artifact, version) {
+
+            // Determine the current host
+            var this_domain = "https://" + window.location.hostname;
+
+            // Set gradle snippet
+            document.getElementById("gradle-snippet").innerText = "repositories {\n    maven { url '" + this_domain + "/maven' }\n}\n\ndependencies {\n    implementation '" + group + ":" + artifact + ":" + version + "'\n}";
+
+            // Set maven snippet
+            document.getElementById("maven-snippet").innerText = "<repositories>\n    <repository>\n        <id>" + window.location.hostname + "</id>\n        <url>" + this_domain + "</url>\n    </repository>\n</repositories>\n\n<dependency>\n    <groupId>" + group + "</groupId>\n    <artifactId>" + artifact + "</artifactId>\n    <version>" + version + "</version>\n</dependency>";
+
+        }
+
+        // Check for an artifact in the url
+        var group = new URLSearchParams(window.location.search).get("g");
+        var artifact = new URLSearchParams(window.location.search).get("a");
+
+        if (!artifact && !group) {
+            loadMainPageArtifacts();
+        } else {
+            loadArtifactPage(group, artifact)
+        }
+
+    </script>
 
 </body>
+
 </html>

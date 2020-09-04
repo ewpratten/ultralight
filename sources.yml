@@ -1,16 +1,24 @@
 
 sources:
    - 
-      groupID: "io.github.frc5024"
-      artifactID: "lib5k"
-      github:
-        owner: frc5024
-        repository: lib5k
-        assetFormat: "lib5k-{version}-all.jar"
-   - 
       groupID: "ca.retrylife"
       artifactID: "libepn"
       github:
         owner: ewpratten
         repository: libepn
         assetFormat: "easy-pose-notation-{version}.jar"
+   - 
+      groupID: "ca.retrylife"
+      artifactID: "ewmath"
+      github:
+        owner: ewpratten
+        repository: ewmath
+        assetFormat: "ewmath.jar"
+   - 
+      groupID: "io.github.frc5024"
+      artifactID: "lib5k"
+      github:
+        owner: frc5024
+        repository: lib5k
+        assetFormat: "lib5k-{version}-all.jar"
+   
