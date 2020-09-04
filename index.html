@@ -86,6 +86,7 @@
 
         <div class="container hidden" id="artifact">
             <h1 id="package-name">com.example.artifact</h1>
+            <a href="#markdownEmbedModal" id="shield" data-toggle="modal"></a>
             <hr>
 
             <h3>Versions:</h3>
@@ -101,6 +102,26 @@
             <p><strong>Maven:</strong></p>
             <pre id="maven-snippet"></pre>
 
+            <div class="modal fade" id="markdownEmbedModal" tabindex="-1" role="dialog" aria-labelledby="markdown-embed-modal-title" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-scrollable" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="markdown-embed-modal-title">Shields</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                        The Ultralight server will automatically generate a shield for each artifact. To embed the shield for this artifact in a Markdown file, copy the following line:
+                        <pre id="mdSnippet"></pre>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
         </div>
 
     </div>
@@ -109,6 +130,10 @@
     <div style="text-align:center;color:gray">
         Made with ♥ by <a href="https://retrylife.ca">Evan Pratten</a>
     </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
     <script>
         function loadMainPageArtifacts() {
@@ -155,6 +180,10 @@
             // Unhide artifact loader
             document.getElementById("artifact-loader").classList.remove("hidden");
 
+            // Set the shield
+            document.getElementById("shield").innerHTML = "<img src='"+window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/api/artifact/"+group+"/"+artifact+"/shield?d="+window.location.hostname+"' />"
+            document.getElementById("mdSnippet").innerText = "[![Maven Repository]("+window.location.protocol+"//"+window.location.hostname+":"+window.location.port+"/api/artifact/"+group+"/"+artifact+"/shield?d="+window.location.hostname+")]("+window.location+")";
+
             // Make an HTTP request
             const Http = new XMLHttpRequest();
             const url = "/api/artifact/" + group + "/" + artifact + "/versions";
@@ -195,6 +224,8 @@
                     setActiveVersionExample(group, artifact, response.versions[0].code);
                 }
             };
+
+            
         }
 
         function setActiveVersionExample(group, artifact, version) {

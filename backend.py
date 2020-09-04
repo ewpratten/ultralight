@@ -113,6 +113,40 @@ def handleArtifactAPI(group, artifact):
 
     return res
 
+@app.route("/api/artifact/<group>/<artifact>/shield")
+def handleArtifactShieldAPI(group, artifact):
+
+    # Check that the artifact exists
+    repocode = ""
+    fmt = ""
+    for source in loadSourcesYML()["sources"]:
+        if source["groupID"] == group and source["artifactID"] == artifact:
+            repocode = source["github"]["owner"] + "/" + source["github"]["repository"]
+            fmt = source["github"]["assetFormat"]
+            break
+    else:
+        return "Artifact not on this server", 404
+
+    # Get version data
+    raw_versions = getAllValidVersions(repocode)
+    latest_version = list(raw_versions.keys())[0]
+
+    # Select correct title text based on inputs
+    title_text = "Ultralight"
+    if "d" in flask.request.args:
+        title_text = flask.request.args.get("d")
+    if title_text == "127.0.0.1":
+        title_text = "Ultralight"
+
+    # Create a response
+    res = flask.make_response(flask.jsonify({
+        "success": True,
+        "redirect": True
+    }), 302)
+    res.headers.set("content-type", "application/x-maven-pom+xml")
+    res.headers.set("Location", f"https://img.shields.io/badge/{title_text}-{latest_version}-blue")
+    return res
+
 
 # Generates a fake .pom file for input data
 def generatePOMForPackage(group, artifact, version) -> str:
