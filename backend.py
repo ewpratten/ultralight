@@ -216,7 +216,7 @@ def handleMaven(path):
 
         # Get the groupID
         group = ".".join(pathComponents[:-3])
-    elif len(pathComponents) == 4:
+    if len(pathComponents) == 4 or filename == "maven-metadata.xml":
         # Get the artifactID
         artifact = pathComponents[-2]
 
