@@ -24,6 +24,6 @@ Setting up your own instance is easy. Just [fork this repository](https://github
 
 *Artifacts listing*
 
-![](assets/ultralight-artifact.png)
+![](assets/ultralight-artifact-info.png)
 
 *Generated installation instructions for an artifact*
