@@ -249,7 +249,10 @@ def handleMaven(path):
     version: str
     artifact: str
     group: str
+    len4 = False
     if len(pathComponents) > 4:
+        len4 = True
+    
         # Get the version
         version = pathComponents[-2]
 
@@ -264,7 +267,7 @@ def handleMaven(path):
 
         # Get the groupID
         group = ".".join(pathComponents[:-2])
-    else:
+    elif not len4:
         return "Artifact not found (parse error)", 404
 
     # Check that the artifact exists
