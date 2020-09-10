@@ -15,7 +15,7 @@ class Webapp(object):
         self._google_tracking_code = google_tracking_code
 
     def __call__(self, *args):
-        return
+        return []
 
     def _handle_404(self, e):
         # Track this event
