@@ -14,7 +14,7 @@ class Webapp(object):
         self.flask = self._app
         self._google_tracking_code = google_tracking_code
 
-    def __call__(self):
+    def __call__(self, **kwargs):
         print("Not implemented")
 
     def _handle_404(self, e):
