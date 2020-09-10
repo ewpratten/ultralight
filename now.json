@@ -13,7 +13,7 @@
         {
             "src": "backend.py",
             "use": "@now/python@canary"
-        }
+        } 
     ],
     "routes": [
         {
