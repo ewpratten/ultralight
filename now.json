@@ -7,6 +7,10 @@
             "use": "@vercel/static"
         },
         {
+            "src": "static/js/*",
+            "use": "@vercel/static"
+        },
+        {
             "src": "backend.py",
             "use": "@now/python@canary"
         }
