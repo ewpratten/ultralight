@@ -2,8 +2,9 @@
 import requests
 import hashlib
 import flask
+from http.server import BaseHTTPRequestHandler
 
-class Webapp(object):
+class Webapp(BaseHTTPRequestHandler):
 
     _app: flask.Flask
     flask: flask.Flask
@@ -13,9 +14,6 @@ class Webapp(object):
         self._app = flask.Flask(name, static_folder=static_directory)
         self.flask = self._app
         self._google_tracking_code = google_tracking_code
-
-    def __call__(self, *args):
-        return ["", ""]
 
     def _handle_404(self, e):
         # Track this event

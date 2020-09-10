@@ -3,6 +3,10 @@
     "name": "ultralight",
     "builds": [
         {
+            "src": "static/*",
+            "use": "@vercel/static"
+        },
+        {
             "src": "backend.py",
             "use": "@now/python@canary"
         }
