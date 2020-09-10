@@ -4,6 +4,8 @@ import json
 import yaml
 from datetime import datetime
 import os
+import random
+import hashlib
 
 # Flask app configuration
 app = flask.Flask(__name__, static_folder="static")
@@ -12,9 +14,120 @@ app.config['JSON_SORT_KEYS'] = False
 # Handle Github tokens
 GH_ID = os.environ.get("GH_CLI_ID", "")
 GH_PRIV = os.environ.get("GH_CLI_PRIV", "")
+GA_TRACKING_ID = os.environ.get("GA_TRACKING_ID", "")
 
 # Caching
 CACHE_SECONDS = 60
+
+# Google analytics namespace
+
+def ga_generateRandomUID() -> str:
+    """Generate a random UID string for a tracking identifier
+
+    Returns:
+        str: Random tracking UID
+    """
+    return hashlib.md5(str(random.random()).encode()).hexdigest()
+
+
+def ga_trackPath(url, uid=ga_generateRandomUID()):
+    data = {
+        'v': '1',  # API Version.
+        'tid': GA_TRACKING_ID,  # Tracking ID / Property ID.
+        # Anonymous Client Identifier. Ideally, this should be a UUID that
+        # is associated with particular user, device, or browser instance.
+        'cid': uid,
+        't': "pageview",
+        'dp': url,
+        'ua': 'Opera/9.80 (Windows NT 6.0) Presto/2.12.388 Version/12.14'
+    }
+
+    # Call the collection system
+    ga_mkGACollectionRequest(data)
+    
+    
+def ga_trackEvent(category, action, uid=ga_generateRandomUID()):
+    data = {
+        'v': '1',  # API Version.
+        'tid': GA_TRACKING_ID,  # Tracking ID / Property ID.
+        # Anonymous Client Identifier. Ideally, this should be a UUID that
+        # is associated with particular user, device, or browser instance.
+        'cid': uid,
+        't': 'event',  # Event hit type.
+        'ec': category,  # Event category.
+        'ea': action,  # Event action.
+        'el': None,  # Event label.
+        'ev': 0,  # Event value, must be an integer
+        'ua': 'Opera/9.80 (Windows NT 6.0) Presto/2.12.388 Version/12.14'
+    }
+
+    # Call the collection system
+    ga_mkGACollectionRequest(data)
+
+
+
+def ga_mkGACollectionRequest(data: dict):
+    try:
+        requests.post(
+            'https://www.google-analytics.com/collect', data=data)
+    except requests.exceptions.ConnectionError as e:
+        print("Failed to make tracking request")
+
+
+def trackAPICall(url, uid=ga_generateRandomUID()):
+
+    # Make a log entry
+    print(f"A request has been made to {url} with a UID of {uid}")
+
+    # Call event tracker
+    ga_trackEvent(
+        "APICall",
+        url,
+        uid
+    )
+
+    # Call path tracker
+    ga_trackPath(
+        url,
+        uid
+    )
+
+def trackError(url, error, uid=ga_generateRandomUID()):
+    trackAPICall(f"{url}?internal_error={error}", uid=uid)
+
+def getBrowserFingerprint() -> str:
+    return hashlib.md5(flask.request.headers.get('User-Agent').encode()).hexdigest()
+
+@app.errorhandler(404)
+def error404(e):
+
+    # Track this event with GA
+    trackAPICall(
+        "/404",
+        uid=getBrowserFingerprint()
+    )
+
+    return flask.jsonify({
+        "success": False,
+        "message": "not found",
+        "error":str(e)
+    }), 404
+
+@app.errorhandler(500)
+def error500(e):
+
+    # Track this event with GA
+    trackError(
+        "/error",
+        "500"
+    )
+
+    return flask.jsonify({
+        "success": False,
+        "message":"an application error ocurred",
+        "error":str(e)
+    }), 500
+
 
 # Function to load the sources yml
 def loadSourcesYML() -> dict:
@@ -23,6 +136,12 @@ def loadSourcesYML() -> dict:
 # Index route
 @app.route("/")
 def handleIndex():
+
+    # Track request
+    trackAPICall(
+        "/",
+        uid=getBrowserFingerprint()
+    )
 
     # Load the index
     index = open("static/index.html", "r").read()
@@ -38,6 +157,12 @@ def handleIndex():
 # Sources route
 @app.route("/sources.yml")
 def handleSources():
+
+    # Track request
+    trackAPICall(
+        "/sources.yml",
+        uid=getBrowserFingerprint()
+    )
 
     # Load the sources file
     sources = open("sources.yml", "r").read()
@@ -56,6 +181,12 @@ def handleSources():
 # Sources api
 @app.route("/api/sources")
 def handleSourcesAPI():
+
+    # Track request
+    trackAPICall(
+        "/api/sources",
+        uid=getBrowserFingerprint()
+    )
 
     # Get the YML config
     sources = loadSourcesYML()["sources"]
@@ -83,6 +214,12 @@ def handleSourcesAPI():
 
 @app.route("/api/artifact/<group>/<artifact>/versions")
 def handleArtifactAPI(group, artifact):
+
+    # Track request
+    trackAPICall(
+        f"/api/artifact/{group}/{artifact}/versions",
+        uid=getBrowserFingerprint()
+    )
 
     # Check that the artifact exists
     repocode = ""
@@ -123,6 +260,12 @@ def handleArtifactAPI(group, artifact):
 
 @app.route("/api/artifact/<group>/<artifact>/shield")
 def handleArtifactShieldAPI(group, artifact):
+
+    # Track request
+    trackAPICall(
+        f"/api/artifact/{group}/{artifact}/shield",
+        uid=getBrowserFingerprint()
+    )
 
     # Check that the artifact exists
     repocode = ""
@@ -237,6 +380,12 @@ def fetchJAR(url, fmt):
 # Maven handler
 @app.route("/maven/<path:path>")
 def handleMaven(path):
+
+    # Track request
+    trackAPICall(
+        f"/api/{path}",
+        uid=getBrowserFingerprint()
+    )
 
     # Parse filepath
     pathComponents = path.split("/")
