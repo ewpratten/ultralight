@@ -1,3 +1,4 @@
 flask
 requests
 pyyaml
+git+https://github.com/Ewpratten/webapputils
