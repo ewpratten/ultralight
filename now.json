@@ -1,12 +1,11 @@
 {
     "version": 2,
     "name": "ultralight",
-    "builds": [
-        {
-            "src": "**/*.py",
-            "use": "@now/python@canary"
+    "functions": {
+        "backend.py": {
+            "includeFiles": "webapputils.py"
         }
-    ],
+    },
     "routes": [
         {
             "src": "/.*",
