@@ -4,10 +4,10 @@ import json
 import yaml
 from datetime import datetime
 import os
-from webapputils import Webapp
+import webapputils
 
 # Flask app configuration
-app = Webapp(__name__, static_directory="static", google_tracking_code=os.environ.get("GA_TRACKING_ID", ""))
+app = webapputils.Webapp(__name__, static_directory="static", google_tracking_code=os.environ.get("GA_TRACKING_ID", ""))
 
 # Handle Github tokens
 GH_ID = os.environ.get("GH_CLI_ID", "")
