@@ -29,6 +29,13 @@ sources:
         repository: inputlib
         assetFormat: "inputlib.jar"
    - 
+      groupID: "ca.retrylife"
+      artifactID: "jstate"
+      github:
+        owner: ewpratten
+        repository: jstate
+        assetFormat: "jstate.jar"
+   - 
       groupID: "ca.retrylife.frc"
       artifactID: "limelight"
       github:
