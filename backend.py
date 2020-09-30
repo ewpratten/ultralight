@@ -343,7 +343,10 @@ def handleJAR(group: str, artifact: str, version: str, file: str):
         return "Artifact not on this server", 404
 
     # Get a list of valid versions for the asset
-    all_versions = getAllValidVersions(artifact_data["repository"])
+    try:
+        all_versions = getAllValidVersions(artifact_data["repository"])
+    except:
+        return "Not found", 404
 
     # Determine the URL to the actual asset
     asset_url = all_versions[version]["url"]
