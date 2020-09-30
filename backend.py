@@ -345,11 +345,11 @@ def handleJAR(group: str, artifact: str, version: str, file: str):
     # Get a list of valid versions for the asset
     try:
         all_versions = getAllValidVersions(artifact_data["repository"])
+    
+        # Determine the URL to the actual asset
+        asset_url = all_versions[version]["url"]
     except:
-        return "Not found", 404
-
-    # Determine the URL to the actual asset
-    asset_url = all_versions[version]["url"]
+        return "Not found. Invalid version", 404
 
     # Build and return a response
     res = fetchJAR(asset_url, artifact_data["asset_pattern"].replace("{version}", version))
