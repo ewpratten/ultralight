@@ -36,6 +36,13 @@ sources:
         repository: jstate
         assetFormat: "jstate.jar"
    - 
+      groupID: "ca.retrylife.mc"
+      artifactID: "justcore"
+      github:
+        owner: ewpratten
+        repository: justcore
+        assetFormat: "justcore.jar"
+   - 
       groupID: "ca.retrylife.frc"
       artifactID: "limelight"
       github:
